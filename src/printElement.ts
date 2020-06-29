@@ -59,7 +59,7 @@ const createPageStyle = (attributes: CssAttributes) => {
  *      `onAfterPrint`     : 印刷の後に実行される
  * @returns {void}
  */
-const print: PrintFunction = (
+export const printElement: PrintFunction = (
   target: PrintTarget = null,
   options: PrintOptions = {},
 ) => {
@@ -69,37 +69,37 @@ const print: PrintFunction = (
     onBeforePrint,
     onAfterPrint,
   } = options;
-  let printElement: Element;
+  let printTarget: Element;
   let pageStyleElement: Element;
   const handleBeforePrint = (event: Event) => {
     initialization();
     if (onBeforePrint) {
-      onBeforePrint(event, printElement, () => {
-        if (printElement) {
-          printElement.classList.toggle(printOnlyClassName);
+      onBeforePrint(event, printTarget, () => {
+        if (printTarget) {
+          printTarget.classList.toggle(printOnlyClassName);
         }
       });
     }
     pageStyleElement = createPageStyle(pageStyle);
     const id = createId();
-    printElement = document.createElement('div');
-    printElement.classList.add(printOnlyClassName);
-    printElement.id = id;
+    printTarget = document.createElement('div');
+    printTarget.classList.add(printOnlyClassName);
+    printTarget.id = id;
 
     if (typeof target === 'string') {
       const targetElements = document.querySelectorAll(target);
       Array.from(targetElements).forEach((targetElement) => {
-        printElement.appendChild(targetElement.cloneNode(true));
+        printTarget.appendChild(targetElement.cloneNode(true));
       });
     } else if (typeof target === 'function') {
       const targetElement = target();
-      printElement.appendChild(targetElement && targetElement.cloneNode(true));
+      printTarget.appendChild(targetElement && targetElement.cloneNode(true));
     }
 
     setHiddenBody(true);
 
     document.head.appendChild(pageStyleElement);
-    document.body.appendChild(printElement);
+    document.body.appendChild(printTarget);
   };
 
   const handleAfterPrint = (event: Event) => {
@@ -107,8 +107,8 @@ const print: PrintFunction = (
       onAfterPrint(event);
     }
     if (!debug) {
-      if (printElement) {
-        printElement.remove();
+      if (printTarget) {
+        printTarget.remove();
       }
       if (pageStyleElement) {
         pageStyleElement.remove();
@@ -136,9 +136,9 @@ const print: PrintFunction = (
   }
 };
 
-type CssAttributes = Record<string, unknown>;
+export type CssAttributes = Record<string, unknown>;
 
-type PrintOptions = {
+export type PrintOptions = {
   pageStyle?: CssAttributes;
   debug?: boolean;
   onBeforePrint?: (
@@ -157,5 +157,3 @@ export type PrintFunction = (
 export type ElementSelector = () => Element;
 
 export type PrintTarget = string | ElementSelector | null;
-
-export default print;
